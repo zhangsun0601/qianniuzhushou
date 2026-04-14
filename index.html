@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 { font-size: 24px; margin-bottom: 4px; color: #333; display: flex; align-items: center; gap: 8px; }
+    .subtitle { font-size: 13px; color: #666; margin-bottom: 20px; border-left: 3px solid #667eea; padding-left: 12px; }
+    
+    /* 任务选择器 */
+    .task-selector {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .task-selector label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-right: 15px;
+    }
+    .task-selector select {
+      padding: 10px 16px;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 14px;
+      background: white;
+      cursor: pointer;
+      min-width: 200px;
+    }
+    .task-selector select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    /* 任务面板 */
+    .task-panel {
+      display: none;
+    }
+    .task-panel.active {
+      display: block;
+    }
+    
+    .stats {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      flex: 1;
+      background: #f8f9fa;
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      transition: transform 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #667eea;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+    .login-bar {
+      background: #f0f4ff;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .login-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .input-group {
+      margin-bottom: 16px;
+    }
+    .input-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #333;
+    }
+    .input-group textarea {
+      width: 100%;
+      height: 150px;
+      padding: 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 12px;
+      resize: vertical;
+      transition: border-color 0.2s;
+    }
+    .input-group textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .checkbox-group input {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: #667eea; color: white; }
+    .btn-primary:hover { background: #5a67d8; transform: translateY(-1px); }
+    .btn-primary:disabled { background: #cbd5e0; cursor: not-allowed; transform: none; }
+    .btn-danger { background: #f44336; color: white; }
+    .btn-danger:hover { background: #e53935; }
+    .btn-danger:disabled { background: #ffcdd2; cursor: not-allowed; }
+    .btn-success { background: #4caf50; color: white; }
+    .btn-success:hover { background: #43a047; }
+    .btn-success:disabled { background: #c8e6c9; cursor: not-allowed; }
+    .btn-secondary { background: #6c757d; color: white; }
+    .btn-secondary:hover { background: #5a6268; }
+    .btn-clean { background: #ff9800; color: white; }
+    .btn-clean:hover { background: #fb8c00; transform: translateY(-1px); }
+    .btn-clean:disabled { background: #ffcc80; cursor: not-allowed; transform: none; }
+    .btn-warning { background: #ff9800; color: white; }
+    .btn-warning:hover { background: #fb8c00; }
+    .btn-warning:disabled { background: #ffcc80; cursor: not-allowed; }
+    .btn-info { background: #17a2b8; color: white; }
+    .btn-info:hover { background: #138496; transform: translateY(-1px); }
+    .btn-info:disabled { background: #9ec7d0; cursor: not-allowed; transform: none; }
+    .log {
+      background: #1e1e2e;
+      color: #cdd6f4;
+      border-radius: 12px;
+      padding: 12px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 11px;
+      height: 200px;
+      overflow-y: auto;
+    }
+    .status {
+      margin-top: 12px;
+      padding: 10px;
+      background: #e8f5e9;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 13px;
+      color: #2e7d32;
+    }
+    .status.running { background: #fff3e0; color: #ed6c02; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎯 千牛工作助手</h1>
+    <div class="subtitle" id="subtitle">请选择一个任务开始</div>
+
+    <!-- 任务选择器 -->
+    <div class="task-selector">
+      <label>📋 选择任务：</label>
+      <select id="taskSelect">
+        <option value="">-- 请选择任务 --</option>
+        <option value="signup">🚀 秒杀批量报名</option>
+        <option value="clean">🧹 SKU批量清洗</option>
+        <option value="status">🔍 营销ID状态检测</option>
+  <option value="refund">💰 批量退款</option>
+<option value="perfect">🔧 批量完善商品</option>
+
+      </select>
+      <button id="openBrowserBtn" class="btn-secondary" style="margin-left: 15px; padding: 8px 16px;">🌐 打开千牛后台</button>
+    </div>
+
+    <!-- ==================== 面板1：秒杀报名 ==================== -->
+    <div id="panelSignup" class="task-panel">
+      <div class="stats">
+        <div class="stat-card"><div class="stat-value" id="totalProducts">0</div><div class="stat-label">商品总数</div></div>
+        <div class="stat-card"><div class="stat-value" id="totalSignups">0</div><div class="stat-label">成功报名</div></div>
+        <div class="stat-card"><div class="stat-value" id="currentProduct">0</div><div class="stat-label">当前商品</div></div>
+      </div>
+
+      <div class="login-bar">
+        <div class="login-status">
+          <span>🔐 登录状态：</span>
+          <span id="loginStatus">检测中...</span>
+        </div>
+        <button id="refreshLoginBtn" class="btn-secondary" style="padding: 6px 12px;">🔄 刷新状态</button>
+      </div>
+
+      <div class="input-group">
+<label>📋 商品列表（格式：商品ID,托管 或 商品ID,折扣）</label>
+<textarea id="productList" placeholder="示例：&#10;958281545368,托管  (活动到手价50%-0.01，活动价50%)&#10;958281545369,70    (只改活动到手价为70%)&#10;958281545370,90    (只改活动到手价为90%)"></textarea>
+      </div>
+
+      <!-- 🔥 新增：报名次数设置 -->
+      <div class="input-group" style="margin-top: 10px;">
+        <label>🔢 报名次数设置</label>
+        <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 14px; color: #333;">每个商品报名次数：</span>
+            <input type="number" id="signupCountInput" min="1" max="10" value="1" style="width: 80px; padding: 8px; border: 1px solid #e0e0e0; border-radius: 8px; text-align: center;">
+            <span style="font-size: 14px; color: #666;">次 (1-10次)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="checkbox-group">
+        <input type="checkbox" id="stopOnError">
+        <span style="font-size: 14px; color: #333;">遇到错误时停止</span>
+      </div>
+      <div class="button-group">
+        <button id="loadDemoBtn" class="btn-primary">📋 加载示例</button>
+        <button id="loadFileBtn" class="btn-primary">📁 从文件加载</button>
+        <button id="startBtn" class="btn-primary" disabled>▶️ 开始报名</button>
+        <button id="pauseBtn" class="btn-warning" disabled>⏸️ 暂停</button>
+        <button id="resumeBtn" class="btn-success" disabled>▶️ 继续</button>
+        <button id="stopBtn" class="btn-danger" disabled>⏹️ 停止</button>
+        <button id="exportSignupBtn" class="btn-success" disabled>📎 导出结果</button>
+      </div>
+    </div>
+
+    <!-- ==================== 面板2：SKU清洗 ==================== -->
+    <div id="panelClean" class="task-panel">
+      <div class="stats">
+        <div class="stat-card"><div class="stat-value" id="cleanTotalProducts">0</div><div class="stat-label">商品总数</div></div>
+        <div class="stat-card"><div class="stat-value" id="cleanSuccessCount">0</div><div class="stat-label">成功</div></div>
+        <div class="stat-card"><div class="stat-value" id="cleanFailCount">0</div><div class="stat-label">失败</div></div>
+      </div>
+
+      <div class="input-group">
+        <label>📋 商品ID列表（每行一个）</label>
+        <textarea id="cleanProductList" placeholder="示例：&#10;958281545368&#10;958281545369"></textarea>
+      </div>
+
+      <div class="button-group">
+        <button id="cleanLoadFileBtn" class="btn-primary">📁 从文件加载</button>
+        <button id="skuCleanBtn" class="btn-clean" disabled>🧹 开始清洗</button>
+        <button id="cleanPauseBtn" class="btn-warning" disabled>⏸️ 暂停</button>
+        <button id="cleanResumeBtn" class="btn-success" disabled>▶️ 继续</button>
+        <button id="cleanStopBtn" class="btn-danger" disabled>⏹️ 停止</button>
+        <button id="exportCleanBtn" class="btn-success" disabled>📎 导出结果</button>
+      </div>
+    </div>
+
+    <!-- ==================== 面板3：状态检测 ==================== -->
+    <div id="panelStatus" class="task-panel">
+      <div class="stats">
+        <div class="stat-card"><div class="stat-value" id="statusTotalIds">0</div><div class="stat-label">ID总数</div></div>
+        <div class="stat-card"><div class="stat-value" id="statusCurrentId">0</div><div class="stat-label">当前进度</div></div>
+        <div class="stat-card"><div class="stat-value" id="statusFoundCount">0</div><div class="stat-label">已检测</div></div>
+      </div>
+
+      <div class="input-group">
+        <label>🔍 营销ID列表（每行一个，或用逗号分隔）</label>
+        <textarea id="marketingIdList" rows="5" placeholder="示例：&#10;10029940017180&#10;10029943255068&#10;或: 10029940017180,10029943255068"></textarea>
+      </div>
+
+      <div class="button-group">
+        <button id="statusLoadFileBtn" class="btn-primary">📁 从文件加载</button>
+        <button id="checkStatusBtn" class="btn-info" disabled>🔍 开始检测</button>
+        <button id="statusPauseBtn" class="btn-warning" disabled>⏸️ 暂停</button>
+        <button id="statusResumeBtn" class="btn-success" disabled>▶️ 继续</button>
+        <button id="statusStopBtn" class="btn-danger" disabled>⏹️ 停止</button>
+        <button id="exportStatusBtn" class="btn-success" disabled>📎 导出结果</button>
+      </div>
+    </div>
+    <!-- ==================== 面板4：批量退款 ==================== -->
+    <div id="panelRefund" class="task-panel">
+      <div class="stats">
+        <div class="stat-card"><div class="stat-value" id="refundTotalOrders">0</div><div class="stat-label">待退款订单</div></div>
+        <div class="stat-card"><div class="stat-value" id="refundProcessedOrders">0</div><div class="stat-label">已处理商品</div></div>
+        <div class="stat-card"><div class="stat-value" id="refundCurrentRound">0</div><div class="stat-label">当前轮次</div></div>
+      </div>
+
+      <div class="order-list" id="orderList" style="background: #f8f9fa; border-radius: 12px; padding: 12px; margin: 16px 0; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px;">
+        <div style="color:#999; text-align:center;">点击"抓取订单号"</div>
+      </div>
+
+      <div class="button-group">
+        <button id="getOrdersBtn" class="btn-primary">📋 抓取订单号</button>
+        <button id="startRefundBtn" class="btn-primary" disabled>▶️ 开始退款</button>
+        <button id="stopRefundBtn" class="btn-danger" disabled>⏹️ 停止</button>
+        <button id="openBoughtPageBtn" class="btn-secondary">🛒 打开已买到的宝贝</button>
+
+      </div>
+    </div>
+<!-- ==================== 面板5：完善商品 ==================== -->
+<div id="panelPerfect" class="task-panel">
+  <div class="stats">
+    <div class="stat-card"><div class="stat-value" id="perfectTotalIds">0</div><div class="stat-label">ID总数</div></div>
+    <div class="stat-card"><div class="stat-value" id="perfectProcessed">0</div><div class="stat-label">已处理</div></div>
+    <div class="stat-card"><div class="stat-value" id="perfectClicked">0</div><div class="stat-label">点击按钮数</div></div>
+  </div>
+
+  <div class="input-group">
+    <label>🔧 营销ID列表（每行一个，或用逗号分隔）</label>
+    <textarea id="perfectIdList" rows="5" placeholder="示例：&#10;10029773510684&#10;10029772736540&#10;或: 10029773510684,10029772736540"></textarea>
+  </div>
+
+  <div class="button-group">
+    <button id="perfectLoadFileBtn" class="btn-primary">📁 从文件加载</button>
+    <button id="startPerfectBtn" class="btn-info" disabled>🔧 开始完善</button>
+    <button id="perfectPauseBtn" class="btn-warning" disabled>⏸️ 暂停</button>
+    <button id="perfectResumeBtn" class="btn-success" disabled>▶️ 继续</button>
+    <button id="perfectStopBtn" class="btn-danger" disabled>⏹️ 停止</button>
+    <button id="exportPerfectBtn" class="btn-success" disabled>📎 导出结果</button>
+  </div>
+</div>
+    <!-- 公共日志区域 -->
+    <div class="log" id="log"></div>
+    <div class="status" id="status">就绪</div>
+  </div>
+  <script src="renderer.js"></script>
+</body>
+</html>
